@@ -18,29 +18,21 @@ public class User implements UserDetails {
     private int id;
 
     @NotEmpty(message = "First name cannot be empty")
-    @Column(name = "firstname")
     private String firstName;
 
     @NotEmpty(message = "Last name cannot be empty")
-    @Column(name = "lastname")
     private String lastName;
 
     @NotEmpty(message = "Username cannot be empty")
     @Column(name = "username", unique = true)
-    private String username; // Добавил имя пользователя
+    private String username;
 
-    @NotEmpty(message = "Password cannot be empty")
-    @Column(name = "password")
-    private String password; // Добавил пароль
+    private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "users_roles",
+    @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-
-
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>(); // Связь с ролями
 
     public User() {
@@ -52,6 +44,14 @@ public class User implements UserDetails {
         this.lastName = lastName;
         this.username = username;
         this.password = password;
+        this.roles = roles;
+    }
+
+    public User(int id, String firstName, String lastName, String username, Set<Role> roles) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
         this.roles = roles;
     }
 

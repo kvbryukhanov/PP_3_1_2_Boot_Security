@@ -22,12 +22,11 @@
     <br>
 
     <label for="password">Enter password:</label>
-    <input type="password" th:field="*{password}" id="password">
-    <div style="color:red" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">error</div>
+    <input type="password" th:field="*{password}" id="password" required>
     <br>
 
     <label for="roles">Select roles:</label>
-    <select id="roles" name="roleIds" multiple>
+    <select id="roles" name="roleIds" multiple required>
         <option th:each="role : ${allRoles}"
                 th:value="${role.id}"
                 th:text="${role.name}"></option>

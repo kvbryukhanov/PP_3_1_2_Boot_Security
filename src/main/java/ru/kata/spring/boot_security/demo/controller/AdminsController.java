@@ -1,20 +1,16 @@
 package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/admin")
@@ -22,13 +18,11 @@ public class AdminsController {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    AdminsController(UserService userService, RoleService roleService, PasswordEncoder passwordEncoder) {
+    AdminsController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping(value = "/")
@@ -40,7 +34,7 @@ public class AdminsController {
     @GetMapping(value = "/show")
     public String showOne(ModelMap model, @RequestParam int id) {
         model.addAttribute("user", userService.show(id));
-        model.addAttribute("roles", userService.show(id).getRoles());
+        model.addAttribute("roles", userService.getUserRoles(id));
         return "show";
     }
 
@@ -54,17 +48,14 @@ public class AdminsController {
     @PostMapping("/create")
     public String save(@ModelAttribute("user") @Valid User user,
                        BindingResult bindingResult,
-                       @RequestParam("roleIds") List<Long> roleIds,
-                       ModelMap model) {
+                       ModelMap model,
+                       @RequestParam("roleIds") List<Long> roleIds) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", roleService.getAllRoles());
             return "create";
         }
 
-
-        Set<Role> roles = new HashSet<>(roleService.findByIds(roleIds)); // Должен быть метод в сервисе
-        user.setRoles(roles);
-        userService.save(user);
+        userService.save(user, roleIds);
         return "redirect:/admin/";
     }
 
@@ -87,18 +78,7 @@ public class AdminsController {
             return "edit";
         }
 
-        User existingUser = userService.show(id);
-
-        user.setPassword(userService.encodePassword(user.getPassword()));
-
-        if (roleIds != null) {
-            Set<Role> roles = new HashSet<>(roleService.findByIds(roleIds));
-            user.setRoles(roles);
-        } else {
-            user.setRoles(existingUser.getRoles());
-        }
-
-        userService.update(id, user);
+        userService.update(id, user, roleIds);
         return "redirect:/admin/show?id=" + id;
     }
 
